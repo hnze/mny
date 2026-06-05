@@ -977,7 +977,11 @@ function loadFromLocal() {
     const s = localStorage.getItem('subscriptions');
     if (e) expenses = JSON.parse(e);
     if (b) budgets = JSON.parse(b);
-    if (s) subscriptions = JSON.parse(s);
+    if (s) subscriptions = JSON.parse(s).map(sub => ({
+      ...sub,
+      startMonth: parseSheetMonth(sub.startMonth),
+      endMonth: sub.endMonth ? parseSheetMonth(sub.endMonth) : null,
+    }));
   } catch(e) {}
 }
 
@@ -989,40 +993,68 @@ function saveToLocal() {
 
 function parseSheetDate(raw) {
   if (!raw) return '';
-  const str = String(raw);
-  // 이미 YYYY-MM-DD 형식이면 그대로
+  const str = String(raw).trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-  // ISO 형식이면 한국 시간(UTC+9)으로 변환
+
+  // Google Sheets 날짜가 ISO/Date 문자열로 넘어올 때 하루 밀림 방지: KST 기준 날짜로 고정
   const d = new Date(str);
-  if (isNaN(d)) return str.substring(0, 10);
-  const offset = 9 * 60; // KST
-  const local = new Date(d.getTime() + offset * 60000);
-  return local.toISOString().substring(0, 10);
+  if (!isNaN(d)) {
+    const kst = new Date(d.getTime() + 9 * 60 * 60000);
+    return kst.toISOString().substring(0, 10);
+  }
+  return str.substring(0, 10);
 }
+
+function parseSheetMonth(raw) {
+  if (!raw) return '';
+  const str = String(raw).trim();
+
+  // type=month 값 또는 텍스트 월 값은 날짜 객체로 만들지 않고 그대로 월만 사용
+  let m = str.match(/^(\d{4})-(\d{1,2})$/);
+  if (m) return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`;
+
+  m = str.match(/^(\d{4})[-./년\s]+(\d{1,2})(?:월)?/);
+  if (m) return `${m[1]}-${String(Number(m[2])).padStart(2, '0')}`;
+
+  // 스프레드시트의 '2026-06-01' 또는 ISO 날짜는 KST 기준 월로 변환
+  const parsedDate = parseSheetDate(str);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(parsedDate)) return parsedDate.substring(0, 7);
+  if (/^\d{4}-\d{2}$/.test(parsedDate)) return parsedDate;
+
+  return str.substring(0, 7);
+}
+
+function apiUrl(action, data = {}) {
   const encoded = encodeURIComponent(JSON.stringify(data || {}));
-  return `${SCRIPT_URL}?action=${action}&data=${encoded}`;
+  return `${SCRIPT_URL}?action=${encodeURIComponent(action)}&data=${encoded}`;
 }
 
 async function fetchExpenses() {
   const res = await fetch(apiUrl('getExpenses'));
   const data = await res.json();
-  if (data.success) return data.data.map(r => ({
-    id: r['ID'],
-    date: parseSheetDate(r['날짜']),
-    category: r['카테고리'],
-    store: r['구매처'], item: r['물품명'],
-    amount: Number(r['금액']), memo: r['메모'] || ''
-  }));
+  if (data.success && Array.isArray(data.data)) return data.data.map((r, i) => ({
+    id: r['ID'] || r.id || ('sheet-' + i),
+    date: parseSheetDate(r['날짜'] || r.date),
+    category: r['카테고리'] || r.category,
+    store: r['구매처'] || r.store || '',
+    item: r['물품명'] || r.item || '',
+    amount: Number(String(r['금액'] ?? r.amount ?? 0).replace(/,/g, '')),
+    memo: r['메모'] || r.memo || ''
+  })).filter(e => e.date && e.category && e.amount > 0);
   return null;
 }
 
 async function fetchBudgets() {
   const res = await fetch(apiUrl('getBudget'));
   const data = await res.json();
-  if (data.success && data.data.length > 0) {
+  if (data.success && Array.isArray(data.data) && data.data.length > 0) {
     const b = {};
-    data.data.forEach(r => { b[r.category] = Number(r.amount); });
-    return b;
+    data.data.forEach(r => {
+      const category = r.category || r['category'] || r['카테고리'] || r['분류'];
+      const amount = r.amount ?? r['amount'] ?? r['금액'] ?? r['예산'];
+      if (category) b[category] = Number(String(amount || 0).replace(/,/g, ''));
+    });
+    return Object.keys(b).length ? b : null;
   }
   return null;
 }
@@ -1047,12 +1079,21 @@ async function apiSaveBudget(b) {
 async function fetchSubscriptions() {
   const res = await fetch(apiUrl('getSubscriptions'));
   const data = await res.json();
-  if (data.success && data.data.length > 0) {
-    return data.data.map(s => ({
-      ...s,
-      startMonth: s.startMonth ? parseSheetDate(s.startMonth).substring(0, 7) : s.startMonth,
-      endMonth: s.endMonth ? parseSheetDate(s.endMonth).substring(0, 7) : null,
-    }));
+  if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+    return data.data.map((s, i) => {
+      const id = s.id || s.ID || s['ID'] || s['아이디'] || ('sub-sheet-' + i);
+      const name = s.name || s['name'] || s['서비스명'] || s['이름'] || '';
+      const amount = Number(String(s.amount ?? s['amount'] ?? s['금액'] ?? 0).replace(/,/g, ''));
+      const startRaw = s.startMonth || s['startMonth'] || s['시작월'] || s['시작 월'];
+      const endRaw = s.endMonth || s['endMonth'] || s['종료월'] || s['종료 월'];
+      return {
+        id,
+        name,
+        amount,
+        startMonth: startRaw ? parseSheetMonth(startRaw) : getMonthKey(),
+        endMonth: endRaw ? parseSheetMonth(endRaw) : null,
+      };
+    }).filter(s => s.name && s.amount > 0);
   }
   return null;
 }
