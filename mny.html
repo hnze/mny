@@ -987,7 +987,18 @@ function saveToLocal() {
   localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
 }
 
-function apiUrl(action, data) {
+function parseSheetDate(raw) {
+  if (!raw) return '';
+  const str = String(raw);
+  // 이미 YYYY-MM-DD 형식이면 그대로
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  // ISO 형식이면 한국 시간(UTC+9)으로 변환
+  const d = new Date(str);
+  if (isNaN(d)) return str.substring(0, 10);
+  const offset = 9 * 60; // KST
+  const local = new Date(d.getTime() + offset * 60000);
+  return local.toISOString().substring(0, 10);
+}
   const encoded = encodeURIComponent(JSON.stringify(data || {}));
   return `${SCRIPT_URL}?action=${action}&data=${encoded}`;
 }
@@ -997,7 +1008,7 @@ async function fetchExpenses() {
   const data = await res.json();
   if (data.success) return data.data.map(r => ({
     id: r['ID'],
-    date: r['날짜'] ? String(r['날짜']).substring(0, 10) : '',
+    date: parseSheetDate(r['날짜']),
     category: r['카테고리'],
     store: r['구매처'], item: r['물품명'],
     amount: Number(r['금액']), memo: r['메모'] || ''
