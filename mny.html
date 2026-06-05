@@ -987,8 +987,13 @@ function saveToLocal() {
   localStorage.setItem('subscriptions', JSON.stringify(subscriptions));
 }
 
+function apiUrl(action, data) {
+  const encoded = encodeURIComponent(JSON.stringify(data || {}));
+  return `${SCRIPT_URL}?action=${action}&data=${encoded}`;
+}
+
 async function fetchExpenses() {
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getExpenses' }) });
+  const res = await fetch(apiUrl('getExpenses'));
   const data = await res.json();
   if (data.success) return data.data.map(r => ({
     id: r['ID'],
@@ -1001,7 +1006,7 @@ async function fetchExpenses() {
 }
 
 async function fetchBudgets() {
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getBudget' }) });
+  const res = await fetch(apiUrl('getBudget'));
   const data = await res.json();
   if (data.success && data.data.length > 0) {
     const b = {};
@@ -1012,24 +1017,24 @@ async function fetchBudgets() {
 }
 
 async function apiAddExpense(exp) {
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'addExpense', ...exp }) });
+  const res = await fetch(apiUrl('addExpense', exp));
   return await res.json();
 }
 async function apiUpdateExpense(exp) {
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updateExpense', ...exp }) });
+  const res = await fetch(apiUrl('updateExpense', exp));
   return await res.json();
 }
 async function apiDeleteExpense(id) {
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteExpense', id }) });
+  const res = await fetch(apiUrl('deleteExpense', {id}));
   return await res.json();
 }
 async function apiSaveBudget(b) {
   const arr = Object.entries(b).map(([category, amount]) => ({ category, amount }));
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'saveBudget', budgets: arr }) });
+  const res = await fetch(apiUrl('saveBudget', {budgets: arr}));
   return await res.json();
 }
 async function fetchSubscriptions() {
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getSubscriptions' }) });
+  const res = await fetch(apiUrl('getSubscriptions'));
   const data = await res.json();
   if (data.success && data.data.length > 0) {
     return data.data.map(s => ({
@@ -1041,7 +1046,7 @@ async function fetchSubscriptions() {
   return null;
 }
 async function apiSaveSubscriptions() {
-  const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'saveSubscriptions', subscriptions }) });
+  const res = await fetch(apiUrl('saveSubscriptions', {subscriptions}));
   return await res.json();
 }
 
