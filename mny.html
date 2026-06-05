@@ -1050,8 +1050,8 @@ async function fetchSubscriptions() {
   if (data.success && data.data.length > 0) {
     return data.data.map(s => ({
       ...s,
-      startMonth: s.startMonth ? String(s.startMonth).substring(0, 7) : s.startMonth,
-      endMonth: s.endMonth ? String(s.endMonth).substring(0, 7) : null,
+      startMonth: s.startMonth ? parseSheetDate(s.startMonth).substring(0, 7) : s.startMonth,
+      endMonth: s.endMonth ? parseSheetDate(s.endMonth).substring(0, 7) : null,
     }));
   }
   return null;
