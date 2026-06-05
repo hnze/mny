@@ -718,6 +718,7 @@ body {
     <button class="tab-pill" onclick="filterCat('생필품')">생필품</button>
     <button class="tab-pill" onclick="filterCat('쇼핑')">쇼핑</button>
     <button class="tab-pill" onclick="filterCat('식료품')">식료품</button>
+    <button class="tab-pill" onclick="filterCat('관리비')">관리비</button>
   </div>
 
   <div id="history-summary-wrap"></div>
@@ -834,6 +835,7 @@ body {
         <button class="cat-select-btn active" onclick="selectCat('생필품',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M9 3C8.44772 3 8 3.44772 8 4V5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19V7C20 5.89543 19.1046 5 18 5H16V4C16 3.44772 15.5523 3 15 3H9ZM10 5H14V6C14 6.55228 13.5523 7 13 7H11C10.4477 7 10 6.55228 10 6V5Z"/></svg>생필품</button>
         <button class="cat-select-btn" onclick="selectCat('쇼핑',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M20.0049 7H3.99507C3.44481 7 3 7.44772 3 8V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V8C21 7.44772 20.5549 7 20.0049 7ZM9 9V11C9 12.6569 10.3431 14 12 14C13.6569 14 15 12.6569 15 11V9H17V11C17 13.7614 14.7614 16 12 16C9.23858 16 7 13.7614 7 11V9H9Z"/><path d="M8 3C8 2.44772 8.44772 2 9 2H15C15.5523 2 16 2.44772 16 3V7H14V4H10V7H8V3Z"/></svg>쇼핑</button>
         <button class="cat-select-btn" onclick="selectCat('식료품',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12 2C9.23858 2 7 4.23858 7 7C7 8.86395 8.00734 10.4953 9.5 11.4014V21C9.5 21.5523 9.94772 22 10.5 22H13.5C14.0523 22 14.5 21.5523 14.5 21V11.4014C15.9927 10.4953 17 8.86395 17 7C17 4.23858 14.7614 2 12 2Z"/></svg>식료품</button>
+        <button class="cat-select-btn" onclick="selectCat('관리비',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9" opacity="0.5"/></svg>관리비</button>
       </div>
     </div>
     <div class="form-group">
@@ -933,6 +935,7 @@ const CAT_COLORS = {
   '생필품': { bg: '#EEF6FF', text: '#3B82F6', dot: '#3B82F6', icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="#3B82F6" xmlns="http://www.w3.org/2000/svg"><path d="M9 3C8.44772 3 8 3.44772 8 4V5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19V7C20 5.89543 19.1046 5 18 5H16V4C16 3.44772 15.5523 3 15 3H9ZM10 5H14V6C14 6.55228 13.5523 7 13 7H11C10.4477 7 10 6.55228 10 6V5ZM8 9H16V10H8V9ZM8 12H13V13H8V12Z"/></svg>` },
   '쇼핑':   { bg: '#FFF3EE', text: '#F97316', dot: '#F97316', icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="#F97316" xmlns="http://www.w3.org/2000/svg"><path d="M20.0049 7H3.99507C3.44481 7 3 7.44772 3 8V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V8C21 7.44772 20.5549 7 20.0049 7ZM9 9V11C9 12.6569 10.3431 14 12 14C13.6569 14 15 12.6569 15 11V9H17V11C17 13.7614 14.7614 16 12 16C9.23858 16 7 13.7614 7 11V9H9Z"/><path d="M8 3C8 2.44772 8.44772 2 9 2H15C15.5523 2 16 2.44772 16 3V7H14V4H10V7H8V3Z"/></svg>` },
   '식료품': { bg: '#EFFDF4', text: '#0ECA72', dot: '#0ECA72', icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="#0ECA72" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C9.23858 2 7 4.23858 7 7C7 8.86395 8.00734 10.4953 9.5 11.4014V21C9.5 21.5523 9.94772 22 10.5 22H13.5C14.0523 22 14.5 21.5523 14.5 21V11.4014C15.9927 10.4953 17 8.86395 17 7C17 4.23858 14.7614 2 12 2Z"/><path d="M5 5.5C5 4.94772 5.44772 4.5 6 4.5C6.55228 4.5 7 4.94772 7 5.5V11.4014C5.80622 10.6537 5 9.42 5 8V5.5Z" opacity="0.5"/></svg>` },
+  '관리비': { bg: '#F3F0FF', text: '#7C3AED', dot: '#7C3AED', icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="#7C3AED" xmlns="http://www.w3.org/2000/svg"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9" fill="#7C3AED" opacity="0.5"/></svg>` },
 };
 
 let currentMonth = new Date();
@@ -1118,7 +1121,8 @@ function renderHome() {
 
   // budget list
   const list = document.getElementById('home-budget-list');
-  list.innerHTML = ['생필품','쇼핑','식료품'].map(cat => {
+  const budgetCats = ['생필품','쇼핑','식료품'];
+  list.innerHTML = budgetCats.map(cat => {
     const spent = me.filter(e => e.category === cat).reduce((s, e) => s + e.amount, 0);
     const budget = budgets[cat] || 0;
     const pct = budget > 0 ? Math.min(spent / budget * 100, 100) : 0;
@@ -1144,6 +1148,24 @@ function renderHome() {
       </div>
     </div>`;
   }).join('');
+
+  // 관리비 별도 카드 (예산 없음)
+  const manageFee = me.filter(e => e.category === '관리비').reduce((s, e) => s + e.amount, 0);
+  const manageCol = CAT_COLORS['관리비'];
+  list.innerHTML += `
+    <div class="budget-card" onclick="goToCat('관리비')">
+      <div class="budget-card-header">
+        <div class="budget-cat">
+          <div class="cat-icon-wrap" style="background:${manageCol.bg}">${manageCol.icon}</div>
+          <div class="budget-cat-name">관리비</div>
+        </div>
+        <div class="budget-amounts">
+          <div class="budget-spent">${manageFee.toLocaleString()}</div>
+          <div class="budget-total">원</div>
+        </div>
+      </div>
+      <div class="budget-remain" style="color:var(--sub)">예산 한도 없음</div>
+    </div>`;
 
   // sub list on home
   const subEl = document.getElementById('home-sub-list');
@@ -1207,20 +1229,31 @@ function renderHistory() {
   } else {
     const catTotal = me.filter(e => e.category === filterCatActive).reduce((s, e) => s + e.amount, 0);
     const budget = budgets[filterCatActive] || 0;
-    const pct = budget > 0 ? Math.min(catTotal / budget * 100, 100) : 0;
-    const over = catTotal > budget;
-    const col = CAT_COLORS[filterCatActive];
-    summaryWrap.innerHTML = `
-      <div class="history-summary">
-        <div class="history-summary-row">
-          <span class="history-summary-label">${filterCatActive} 지출</span>
-          <span class="history-summary-amount" style="color:${over ? 'var(--danger)' : 'var(--text)'}">${catTotal.toLocaleString()}원</span>
-        </div>
-        <div class="progress-bar" style="margin-bottom:6px">
-          <div class="progress-fill" style="width:${pct}%;background:${over ? 'var(--danger)' : col.dot}"></div>
-        </div>
-        <div class="history-summary-remain">${over ? `예산 ${(catTotal-budget).toLocaleString()}원 초과` : `${(budget-catTotal).toLocaleString()}원 남음 · 예산 ${budget.toLocaleString()}원`}</div>
-      </div>`;
+    const col = CAT_COLORS[filterCatActive] || CAT_COLORS['생필품'];
+    if (filterCatActive === '관리비') {
+      summaryWrap.innerHTML = `
+        <div class="history-summary">
+          <div class="history-summary-row">
+            <span class="history-summary-label">관리비 지출</span>
+            <span class="history-summary-amount">${catTotal.toLocaleString()}원</span>
+          </div>
+          <div class="history-summary-remain" style="color:var(--sub)">예산 한도 없음</div>
+        </div>`;
+    } else {
+      const pct = budget > 0 ? Math.min(catTotal / budget * 100, 100) : 0;
+      const over = catTotal > budget;
+      summaryWrap.innerHTML = `
+        <div class="history-summary">
+          <div class="history-summary-row">
+            <span class="history-summary-label">${filterCatActive} 지출</span>
+            <span class="history-summary-amount" style="color:${over ? 'var(--danger)' : 'var(--text)'}">${catTotal.toLocaleString()}원</span>
+          </div>
+          <div class="progress-bar" style="margin-bottom:6px">
+            <div class="progress-fill" style="width:${pct}%;background:${over ? 'var(--danger)' : col.dot}"></div>
+          </div>
+          <div class="history-summary-remain">${over ? `예산 ${(catTotal-budget).toLocaleString()}원 초과` : `${(budget-catTotal).toLocaleString()}원 남음 · 예산 ${budget.toLocaleString()}원`}</div>
+        </div>`;
+    }
   }
 
   let filtered = filterCatActive === '전체' ? me : me.filter(e => e.category === filterCatActive);
@@ -1283,7 +1316,7 @@ function renderStats() {
   const me = getMonthExpenses();
   const total = me.reduce((s, e) => s + e.amount, 0);
   const totalBudget = Object.values(budgets).reduce((a, b) => a + b, 0);
-  const catTotals = ['생필품','쇼핑','식료품'].map(cat => ({
+  const catTotals = ['생필품','쇼핑','식료품','관리비'].map(cat => ({
     cat, amount: me.filter(e => e.category === cat).reduce((s,e) => s + e.amount, 0)
   }));
   const maxAmt = Math.max(...catTotals.map(c => c.amount), 1);
@@ -1319,13 +1352,14 @@ function renderStats() {
         const col = CAT_COLORS[c.cat];
         const cnt = me.filter(e => e.category === c.cat).length;
         const budget = budgets[c.cat] || 0;
-        const over = c.amount > budget;
+        const over = budget > 0 && c.amount > budget;
+        const budgetText = c.cat === '관리비' ? '예산 없음' : `예산 ${budget.toLocaleString()}원`;
         return `<div class="monthly-item">
           <div class="monthly-item-left">
             <div class="monthly-dot" style="background:${col.dot}"></div>
             <div>
               <div class="monthly-name">${col.icon} ${c.cat}</div>
-              <div class="monthly-count">${cnt}건 · 예산 ${budget.toLocaleString()}원</div>
+              <div class="monthly-count">${cnt}건 · ${budgetText}</div>
             </div>
           </div>
           <div class="monthly-amount" style="color:${over ? 'var(--danger)' : 'var(--text)'}">
@@ -1445,7 +1479,7 @@ function openEditModal(id) {
   document.getElementById('form-amount').value = exp.amount.toLocaleString();
   document.getElementById('form-memo').value = exp.memo || '';
   document.getElementById('store-suggestions').innerHTML = '';
-  const cats = ['생필품','쇼핑','식료품'];
+  const cats = ['생필품','쇼핑','식료품','관리비'];
   document.querySelectorAll('.cat-select-btn').forEach((b,i) => b.classList.toggle('active', cats[i] === exp.category));
   document.getElementById('add-modal').classList.add('open');
 }
@@ -1516,7 +1550,7 @@ function goPage(name, btn) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'history' && filterCatActive !== '전체' && filterCatActive !== '생필품' && filterCatActive !== '쇼핑' && filterCatActive !== '식료품') {
+  if (name === 'history' && filterCatActive !== '전체' && filterCatActive !== '생필품' && filterCatActive !== '쇼핑' && filterCatActive !== '식료품' && filterCatActive !== '관리비') {
     filterCatActive = '전체';
   }
   renderAll();
