@@ -957,12 +957,17 @@ async function init() {
   renderAll();
   try {
     const [expData, budData, subData] = await Promise.all([fetchExpenses(), fetchBudgets(), fetchSubscriptions()]);
-    if (expData) expenses = expData;
+    if (expData) {
+      // 구글 시트 데이터 기준으로 덮어쓰되, local-로 시작하는 임시 항목은 제거
+      expenses = expData;
+    }
     if (budData) budgets = budData;
     if (subData) subscriptions = subData;
     saveToLocal();
     renderAll();
-  } catch(e) {}
+  } catch(e) {
+    console.log('서버 연동 실패, 로컬 데이터 사용:', e);
+  }
 }
 
 function loadFromLocal() {
@@ -986,7 +991,9 @@ async function fetchExpenses() {
   const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getExpenses' }) });
   const data = await res.json();
   if (data.success) return data.data.map(r => ({
-    id: r['ID'], date: r['날짜'], category: r['카테고리'],
+    id: r['ID'],
+    date: r['날짜'] ? String(r['날짜']).substring(0, 10) : '',
+    category: r['카테고리'],
     store: r['구매처'], item: r['물품명'],
     amount: Number(r['금액']), memo: r['메모'] || ''
   }));
@@ -1024,7 +1031,13 @@ async function apiSaveBudget(b) {
 async function fetchSubscriptions() {
   const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getSubscriptions' }) });
   const data = await res.json();
-  if (data.success && data.data.length > 0) return data.data;
+  if (data.success && data.data.length > 0) {
+    return data.data.map(s => ({
+      ...s,
+      startMonth: s.startMonth ? String(s.startMonth).substring(0, 7) : s.startMonth,
+      endMonth: s.endMonth ? String(s.endMonth).substring(0, 7) : null,
+    }));
+  }
   return null;
 }
 async function apiSaveSubscriptions() {
